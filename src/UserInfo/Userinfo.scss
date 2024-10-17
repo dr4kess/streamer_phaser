@@ -1,0 +1,16 @@
+.user-info-wrapper{
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 170px;
+    background-image: url("../../public/assets/Header.png");
+    background-repeat: no-repeat;
+    background-size:contain;
+    background-position: center;
+}
+
+
+.user-info-picture-wrapper{
+    padding: 20px;
+}

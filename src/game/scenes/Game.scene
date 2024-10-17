@@ -1,0 +1,57 @@
+{
+    "id": "fe9dec0b-9530-4ff6-a5a1-14fb1c57bb41",
+    "sceneType": "SCENE",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "Game",
+        "compilerOutputLanguage": "TYPE_SCRIPT",
+        "borderWidth": 1024,
+        "borderHeight": 768
+    },
+    "displayList": [
+        {
+            "type": "Image",
+            "id": "ea968b7b-d77b-466a-8dab-61615f1d6e81",
+            "label": "elem_bg",
+            "texture": {
+                "key": "elem-bg"
+            },
+            "x": 541,
+            "y": 1026
+        },
+        {
+            "type": "Image",
+            "id": "ace2add1-9192-443f-bd5d-c0f791e8cd86",
+            "label": "room_floor_animation_1_000",
+            "texture": {
+                "key": "room_floor-animation 1-000"
+            },
+            "x": 541,
+            "y": 1023.5,
+            "scaleX": 0.44724423281468595,
+            "scaleY": 0.332584663773693
+        },
+        {
+            "type": "Image",
+            "id": "3589344f-70f0-414c-817b-22c8df069753",
+            "label": "room_wall_animation_1_000",
+            "texture": {
+                "key": "room_wall-animation 1-000"
+            },
+            "x": 541,
+            "y": 1026,
+            "scaleX": 0.44570020798697196,
+            "scaleY": 0.3671323364068364
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}

@@ -1,0 +1,48 @@
+{
+    "section1": {
+        "files": [
+            {
+                "url": "assets/Main.png",
+                "type": "image",
+                "key": "elem-bg"
+            },
+            {
+                "url": "assets/room_floor.png",
+                "type": "image",
+                "key": "room_floor",
+                "normalMap": "assets/room_floor_normal.png"
+            },
+            {
+                "url": "assets/room_wall.png",
+                "type": "image",
+                "key": "room_wall",
+                "normalMap": "assets/room_wall_normal.png"
+            },
+            {
+                "url": "assets/Glow.png",
+                "type": "image",
+                "key": "glow"
+            },
+            {
+                "url": "assets/lamp.png",
+                "type": "image",
+                "key": "lamp",
+                "normalMap": "assets/lamp_normal.png"
+            },
+            {
+                "url": "assets/sofa.png",
+                "type": "image",
+                "key": "sofa",
+                "normalMap": "assets/sofa_normal.png"
+            }
+
+        ]
+    },
+    "meta": {
+        "app": "Phaser Editor 2D - Asset Pack Editor",
+        "contentType": "phasereditor2d.pack.core.AssetContentType",
+        "url": "https://phasereditor2d.com",
+        "version": 2,
+        "showAllFilesInBlocks": false
+    }
+}

@@ -1,127 +1,104 @@
 import { EventBus } from '../EventBus';
+import Phaser from 'phaser';
 
 export default class Game extends Phaser.Scene {
     constructor() {
-        super("Game");
-    }
-
-    editorCreate(): void {
-        this.events.emit("scene-awake");
+        super('Game');
     }
 
     create() {
-        this.editorCreate();
+        EventBus.emit('current-scene-ready', this);
 
-        // Add floor
-              const room_floor_glow = this.add.image(200, 223.5, 'glow').setOrigin(0.5).setScale(0.6).setAlpha(1);
-              const room_floor = this.add.image(200, 224, "room_floor").setPipeline('Light2D').setScale(0.55);
-              const room_walls = this.add.image(200, 146, "room_wall").setPipeline('Light2D').setScale(0.55);
-              // const sofa = this.add.image(140, 230, "sofa").setPipeline('Light2D').setScale(0.55);
+        // Add floor and walls (non-draggable objects)
+        const room_floor = this.add.image(200, 224, 'room_floor').setPipeline('Light2D').setScale(0.55);
+        const room_walls = this.add.image(200, 146, 'room_wall').setPipeline('Light2D').setScale(0.55);
 
         // Enable lighting system
         this.lights.enable().setAmbientColor(0x555555);
 
-        // Define floor polygon boundaries (pseudo 3D angled floor shape)
+        // Define floor polygon boundaries
         const floorPolygon = new Phaser.Geom.Polygon([
-            { x: 5, y: 221 },    // Left-Mid Corner
-            { x: 126, y: 160 },  // Left-Top Corner
+            { x: 20, y: 221 },   // Left-Mid Corner
+            { x: 130, y: 165 },  // Left-Top Corner
             { x: 162, y: 178 },  // Mid-Top Corner
-            { x: 241, y: 138 },  // Right-Top Corner
-            { x: 392.5, y: 214 }, // Right-Mid Corner
-            { x: 195, y: 312 }   // Mid-Bottom Corner
+            { x: 239, y: 142 },  // Right-Top Corner
+            { x: 380, y: 214 },  // Right-Mid Corner
+            { x: 193, y: 308 }   // Mid-Bottom Corner
         ]);
 
-        // Visualize the floor polygon
-        const graphics = this.add.graphics({ fillStyle: { color: 0x00ff00, alpha: 0.3 } });
-        graphics.fillPoints(floorPolygon.points, true);
-
-        // Create draggable lamps restricted to the floor polygon
-        const lamp1 = this.createLampWithLight(125, 190);
+        // Create draggable objects
+        const lamp1 = this.createLampWithLight(155, 220);
         const lamp2 = this.createLampWithLight(240, 170);
-        lamp1.setScale(0.55);
-        lamp2.setScale(0.55);
+        const sofa = this.add.image(180, 250, 'sofa').setPipeline('Light2D').setOrigin(0.5).setScale(0.45);
 
-        this.makeLampDraggable(lamp1, floorPolygon);
-        this.makeLampDraggable(lamp2, floorPolygon);
+        this.draggableObjects = [sofa, lamp1, lamp2];
 
-        EventBus.emit('current-scene-ready', this);
+        // Enable keyboard events to toggle dragging
+        this.input.keyboard.on('keydown-T', () => this.toggleDragging(true, floorPolygon));
+        this.input.keyboard.on('keydown-Y', () => this.toggleDragging(false));
+
+        // Initially disable dragging
+        this.toggleDragging(false);
     }
 
     createLampWithLight(x, y) {
-        const lamp = this.add.image(x, y, 'lamp').setPipeline('Light2D').setOrigin(0.5, 1); // Align to bottom-center
-
+        const lamp = this.add.image(x, y, 'lamp').setPipeline('Light2D').setOrigin(0.5, 1).setScale(0.55);
         const lampLight = this.lights.addLight(x, y - (lamp.displayHeight * lamp.scaleY) / 2, 150)
-            .setColor(0xfff1e8)  // Warm light color
-            .setIntensity(0.9);  // Light intensity
-
-        // Create a border around the lamp
-        this.drawLampBorder(lamp);
+            .setColor(0xfff1e8)
+            .setIntensity(0.9);
 
         lamp.light = lampLight;
         return lamp;
     }
 
-    drawLampBorder(lamp) {
-        const graphics = this.add.graphics();
-        graphics.lineStyle(2, 0xff0000, 0.8);  // Red border with 80% opacity
+    makeDraggable(obj, floorPolygon) {
+        obj.setInteractive({ draggable: true });
+        this.input.setDraggable(obj);
 
-        // Calculate the lamp's size (with scaling)
-        const lampWidth = lamp.displayWidth * lamp.scaleX;
-        const lampHeight = lamp.displayHeight * lamp.scaleY;
+        obj.on('drag', (pointer, dragX, dragY) => {
+            // Get the corners of the object at the new position
+            const corners = this.getObjectCorners(obj, dragX, dragY);
 
-        // Draw the border as a rectangle around the lamp
-        graphics.strokeRect(
-            lamp.x - lampWidth / 2,  // Top-left X
-            lamp.y - lampHeight,     // Top-left Y (because origin is bottom-center)
-            lampWidth,               // Width
-            lampHeight               // Height
-        );
+            // Ensure all corners are inside the floorPolygon
+            const allCornersInside = corners.every(corner =>
+                Phaser.Geom.Polygon.Contains(floorPolygon, corner.x, corner.y)
+            );
 
-        // Keep the border updated with the lamp's position
-        lamp.graphics = graphics;
-    }
-
-    makeLampDraggable(lamp, floorPolygon) {
-        lamp.setInteractive({ draggable: true });
-        this.input.setDraggable(lamp);
-
-        lamp.on('drag', (pointer, dragX, dragY) => {
-            // Check if the new position is within the floor polygon
-            if (Phaser.Geom.Polygon.Contains(floorPolygon, dragX, dragY)) {
-                lamp.x = dragX;
-                lamp.y = dragY;
-
-                // Move the light with the lamp
-                lamp.light.x = dragX;
-                lamp.light.y = dragY - (lamp.displayHeight * lamp.scaleY) / 2;
-
-                // Update the border position
-                lamp.graphics.clear();
-                lamp.graphics.lineStyle(2, 0xff0000, 0.8); // Red border
-                lamp.graphics.strokeRect(
-                    lamp.x - (lamp.displayWidth * lamp.scaleX) / 2,
-                    lamp.y - lamp.displayHeight * lamp.scaleY,
-                    lamp.displayWidth * lamp.scaleX,
-                    lamp.displayHeight * lamp.scaleY
-                );
-
-                // Apply perspective scaling (optional)
-                const scaleFactor = this.calculatePerspectiveScale(dragY, floorPolygon);
-                lamp.setScale(scaleFactor);
+            if (allCornersInside) {
+                // Allow movement if inside
+                obj.x = dragX;
+                obj.y = dragY;
+                this.updateObjectPosition(obj);
             }
         });
     }
 
-    calculatePerspectiveScale(y, floorPolygon) {
-        const topY = floorPolygon.points[0].y;
-        const bottomY = floorPolygon.points[2].y;
-        const minScale = 0.54;
-        const maxScale = 0.57;
+    getObjectCorners(obj, x, y) {
+        const halfWidth = (obj.displayWidth * obj.scaleX) / 2;
+        const halfHeight = (obj.displayHeight * obj.scaleY) / 2;
 
-        return Phaser.Math.Linear(minScale, maxScale, (y - topY) / (bottomY - topY));
+        return [
+            { x: x - halfWidth, y: y - halfHeight }, // Top-left
+            { x: x + halfWidth, y: y - halfHeight }, // Top-right
+            { x: x - halfWidth, y: y + halfHeight }, // Bottom-left
+            { x: x + halfWidth, y: y + halfHeight }  // Bottom-right
+        ];
     }
 
-    changeScene() {
-        this.scene.start('GameOver');
+    updateObjectPosition(obj) {
+        if (obj.light) {
+            obj.light.x = obj.x;
+            obj.light.y = obj.y - (obj.displayHeight * obj.scaleY) / 2;
+        }
+    }
+
+    toggleDragging(enable, floorPolygon = null) {
+        if (enable) {
+            // Enable dragging and make objects interactive
+            this.draggableObjects.forEach(obj => this.makeDraggable(obj, floorPolygon));
+        } else {
+            // Disable dragging and remove interactivity
+            this.draggableObjects.forEach(obj => obj.disableInteractive());
+        }
     }
 }
